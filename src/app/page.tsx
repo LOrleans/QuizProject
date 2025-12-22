@@ -3,7 +3,7 @@
 import Questao from "../components/Questao";
 import QuestaoModel from "../models/QuestaoModel";
 import RespostaModel from "../models/RespostaModel";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "../components/Button";
 import Questionario from "../components/Questionario";
 
@@ -15,16 +15,43 @@ const questaoMock = new QuestaoModel( 1, "Qual é a melhor cor?", [
   ], false
 );
 
+const BASE_URL = 'http://localhost:3000/api'
+
 export default function Home() {
-  const [questao, setQuestao] = useState(questaoMock)
+  const [idsQuestions, setIdsQuestions] = useState<number[]>([])
+  const [questao, setQuestao] = useState<QuestaoModel>(questaoMock)
+  const [respostasCertas, setRespostasCertas] = useState<number>(0)
 
-    function questaoRespondida(questao: QuestaoModel){
+  async function loadIDsQuestions(){
+    const resp = await fetch(`${BASE_URL}/questionario`)
+    const idsQuestions = await resp.json()
+    setIdsQuestions(idsQuestions)
+  }
 
-    }
+  async function loadQuestion(idQuestao: number){
+    const resp = await fetch(`${BASE_URL}/questoes/${idQuestao}`)
+    const json = await resp.json()
+    const novaQuestao = QuestaoModel.criarUsandoObjeto(json)
+    setQuestao(novaQuestao)
+  }
 
-    function proximoPasso(){
-       
-    }
+  useEffect(() => {
+    loadIDsQuestions()
+  }, [])
+
+  useEffect(() => {
+    idsQuestions.length > 0 && loadQuestion(idsQuestions[0])
+  }, [idsQuestions])
+
+  function questaoRespondida(questaoRespondida: QuestaoModel){
+    setQuestao(questaoRespondida)
+    const acertou = questaoRespondida.acertou 
+    setRespostasCertas(respostasCertas + (acertou ? 1 : 0))
+  }
+
+  function proximoPasso(){
+      
+  }
 
   return (
     <div className="flex h-screen justify-center items-center flex-col">
@@ -37,25 +64,3 @@ export default function Home() {
     </div>
   );
 }
-
-
-/*
-<Questao valor={questao} onResponse={onResponse} tempoParaResposta={5} tempoEsgotado={tempoEsgotado}/>
-<Button texto="Próxima Questão" href='/resultado'/>
-*/
-
-/*
-
-function onResponse(indice: number) {
-    setQuestao(questao.responderCom(indice))
-    console.log(indice);
-}
-
-function tempoEsgotado(){
-  if(questao.naoRespondida){
-    setQuestao(questao.responderCom(-1))
-  }
-}
-
-
-*/

@@ -18,7 +18,7 @@ export default function Questionario(props: QuestionarioProps) {
 
   return (
     // Questionario
-    <div className="flex flex-col justify-center items-center">
+    <div className="flex flex-col justify-center items-center h-screen">
       {props.questao ? (
         <Questao
           valor={props.questao}
