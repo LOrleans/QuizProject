@@ -1,25 +1,17 @@
 'use client'
 
-import Questao from "../components/Questao";
 import QuestaoModel from "../models/QuestaoModel";
-import RespostaModel from "../models/RespostaModel";
 import { useEffect, useState } from "react";
-import Button from "../components/Button";
 import Questionario from "../components/Questionario";
-
-const questaoMock = new QuestaoModel( 1, "Qual é a melhor cor?", [
-    RespostaModel.errada("Verde"),
-    RespostaModel.errada("Vermelha"),
-    RespostaModel.errada("Azul"),
-    RespostaModel.certa("Preta"),
-  ], false
-);
+import { useRouter } from "next/navigation";
 
 const BASE_URL = 'http://localhost:3000/api'
 
 export default function Home() {
+  const router = useRouter()
+
   const [idsQuestions, setIdsQuestions] = useState<number[]>([])
-  const [questao, setQuestao] = useState<QuestaoModel>(questaoMock)
+  const [questao, setQuestao] = useState<QuestaoModel>()
   const [respostasCertas, setRespostasCertas] = useState<number>(0)
 
   async function loadIDsQuestions(){
@@ -49,15 +41,36 @@ export default function Home() {
     setRespostasCertas(respostasCertas + (acertou ? 1 : 0))
   }
 
-  function proximoPasso(){
-      
+  function idProximaPergunta(){
+    if(questao){
+      const proximoIndice = idsQuestions.indexOf(questao.id) + 1
+      return idsQuestions[proximoIndice]
+    }
   }
 
+  function proximoPasso(){
+    const proximoId = idProximaPergunta()
+    proximoId ? proximaQuestao(proximoId) : finalizar()
+  }
+
+  function proximaQuestao(proximoId: number){
+    loadQuestion(proximoId)
+  }
+
+  function finalizar() {
+    // Construindo a URL com parâmetros de busca
+    const url = `/resultado?total=${idsQuestions.length}&certas=${respostasCertas}`
+    router.push(url)
+  }
+
+  if (!questao) {
+    return <div>Carregando pergunta...</div>;
+  }
   return (
     <div className="flex h-screen justify-center items-center flex-col">
       <Questionario 
         questao={questao}
-        ultima={true}
+        ultima={idProximaPergunta() === undefined}
         questaoRespondida={questaoRespondida}
         proximoPasso={proximoPasso}
       />
