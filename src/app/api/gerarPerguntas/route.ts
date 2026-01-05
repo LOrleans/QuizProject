@@ -1,7 +1,11 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
-const genAI = new GoogleGenerativeAI('AIzaSyBLjgW2rbdxUtYJWn9l3rOHu5QyjFsn50c')
+const apiKey = process.env.GEMINI_API_KEY
+if(!apiKey){
+  throw new Error("A variável de ambiente GEMINI_API_KEY não foi definida!")
+}
+const genAI = new GoogleGenerativeAI(apiKey)
 
 export async function POST(request: Request){
   const { tema, quantidade } = await request.json()
